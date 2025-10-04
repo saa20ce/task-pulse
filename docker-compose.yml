@@ -21,10 +21,17 @@ services:
     newworks:
       - tasknet
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - tasknet
+
   backend:
     build:
       context: ./backend
-    command: sh -c 'python manage.py migrate && python manage.py runserver 0.0.0.0:8000'
+    command: sh -c "python manage.py migrate && daphne -b 0.0.0.0 -p 8000 core.asgi:application"
     volumes:
       - ./backend:/app
     env_file:
@@ -34,6 +41,7 @@ services:
     depends_on:
       - db
       - rabbitmq
+      - redis
     network:
       - tasknet
 
